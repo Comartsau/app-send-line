@@ -9,7 +9,8 @@ import {
 import { useEffect, useState } from "react";
 import axios from "axios";
 
-import moment from "moment";
+import moment from "moment/min/moment-with-locales";
+
 // import { parse, addYears } from "date-fns";
 
 import { ToastContainer, toast } from "react-toastify";
@@ -17,6 +18,7 @@ import "react-toastify/dist/ReactToastify.css";
 
 const Report = () => {
   const [listData, setListData] = useState([]);
+  const [sumData, setSumData] = useState('');
 
   //----- จัดการแสดงข้อมูล / หน้า -------------- //
   const [currentPage, setCurrentPage] = useState(1);
@@ -33,6 +35,7 @@ const Report = () => {
   const [sendData, setSendData] = useState({
     data_1: "",
     data_2: "",
+    data_3: "",
   });
 
   const handleChange = (e) => {
@@ -46,17 +49,19 @@ const Report = () => {
   const handleSubmit = async () => {
     try {
       const data = {
-        date: sendData.data_1,
-        do_number: sendData.data_2,
+        date_start: sendData.data_1 || '',
+        date_end: sendData.data_2 || '',
+        do_number: sendData.data_3 || '',
       };
-
+      console.log(data)
       const res = await axios.post(
         "https://app-send-line-api.vercel.app/api/report",
         data
       );
-      // console.log(res.data);
+      console.log(res.data);
       // setSendData({});
-      setListData(res.data);
+      setListData(res.data.data);
+      setSumData(res.data.sum)
       // toast.success("ส่งข้อมูลสำเร็จ");
     } catch (error) {
       console.error("Error:", error);
@@ -66,10 +71,11 @@ const Report = () => {
   const downloadExcelFile = async () => {
     try {
       const data = {
-        date: sendData.data_1 || "",
-        do_number: sendData.data_2 || "",
+        date_start: sendData.data_1 || "",
+        date_end: sendData.data_2 || "",
+        do_number: sendData.data_3 || '',
       };
-
+3
       console.log(data);
       const response = await axios.post(
         "https://app-send-line-api.vercel.app/api/report/excel",
@@ -102,13 +108,13 @@ const Report = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sendData]);
 
-  // console.log(listData);
+  console.log(listData);
 
   return (
     <Card className="  bg-gray-200 p-4 h-screen">
       <ToastContainer autoClose={3000} theme="colored" />
       <div className="">
-        <h1 className="text-center text-3xl pt-5">รายงานการคืนผลิตภัณฑ์ </h1>
+        <h1 className="text-center text-3xl ">รายงานการคืนผลิตภัณฑ์ </h1>
       </div>
       <Card className=" mt-5 p-4">
         <div className=" flex flex-col lg:flex-row  items-center gap-5 ">
@@ -123,28 +129,39 @@ const Report = () => {
               className="bg-gray-200 border border-gray-300 p-1 rounded-lg mt-2"
             />
           </div>
-          <div className="w-full flex flex-col lg:w-[300px] ">
-            <small>DO Number / CRM Number</small>
+          <div className="w-full flex flex-col lg:w-[300px]">
+            <small>วันที่สิ้นสุด</small>
             <input
-              type="text"
-              placeholder="DO Number / CRM Number"
+              type="date"
+              placeholder="date"
               name="data_2"
               value={sendData.data_2 || ""}
               onChange={(e) => handleChange(e)}
               className="bg-gray-200 border border-gray-300 p-1 rounded-lg mt-2"
             />
           </div>
-          <div className="w-full  lg:w-[200px] flex flex-col">
+          <div className="w-full flex flex-col lg:w-[200px] ">
+            <small>DO Number / CRM Number</small>
+            <input
+              type="text"
+              placeholder="DO Number / CRM Number"
+              name="data_3"
+              value={sendData.data_3 || ""}
+              onChange={(e) => handleChange(e)}
+              className="bg-gray-200 border border-gray-300 p-1 rounded-lg mt-2"
+            />
+          </div>
+          <div className="w-full  lg:w-[100px] flex flex-col">
             <small>จำนวน</small>
             <Typography className="bg-gray-200 border border-gray-300 p-1 rounded-lg mt-2">
-              {listData?.length}
+              {Number(sumData).toLocaleString()}
             </Typography>
           </div>
-          <div className="flex justify-center lg:justify-start  flex-col lg:flex-row  mt-6 gap-3 ">
-            <div>
+          <div className="flex justify-center items-center  lg:justify-start  flex-row mb-5 lg:pt-12 gap-3 ">
+            <div >
               <button
                 onClick={() => setSendData({})}
-                className="bg-gray-800 text-white px-5 py-1 rounded-full"
+                className="bg-gray-800 text-white px-5 py-1 rounded-full w-[100px]"
               >
                 ล้าง
               </button>
@@ -152,7 +169,7 @@ const Report = () => {
             <div>
               <button
                 onClick={downloadExcelFile}
-                className="bg-purple-800 text-white px-5 py-1 rounded-full"
+                className="bg-purple-800 text-white px-5 py-1 rounded-full w-[100px]"
               >
                 EXCEL
               </button>
@@ -160,7 +177,7 @@ const Report = () => {
           </div>
         </div>
         <div>
-          <div className="mt-0 h-[350px] w-full overflow-auto lg:mt-5 ">
+          <div className="mt-2 h-[350px] w-full overflow-auto lg:mt-0 ">
             <table className="w-full min-w-max ">
               <thead>
                 <tr>
@@ -253,8 +270,8 @@ const Report = () => {
                   {displayedData?.map((data, index) => {
                     const isLast = index === displayedData?.length;
                     const classes = isLast
-                      ? " "
-                      : ` border-b border-blue-gray-50 `;
+                      ? "  "
+                      : ` border-b border-blue-gray-50 py-1 `;
                     return (
                       <tr key={index}>
                         <td className={classes}>
