@@ -50,7 +50,7 @@ const Report = () => {
     try {
       const data = {
         date_start: sendData.data_1 || '',
-        date_end: sendData.data_2 || '',
+        date_end: sendData.data_2  || '',
         do_number: sendData.data_3  || '',
       };
       console.log(data)
